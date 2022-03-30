@@ -14,11 +14,14 @@ make[2]: 'include/generated/vdso-offsets.h' is up to date.
   CHK     include/generated/compile.h
   GZIP    kernel/config_data.gz
   CHK     kernel/config_data.h
-  CC      drivers/staging/android/ion/ion.o
-  LD      drivers/staging/android/ion/built-in.o
-  LD      drivers/staging/android/built-in.o
-  LD      drivers/staging/built-in.o
-  LD      drivers/built-in.o
+  GEN     lib/crc32table.h
+  CC      lib/oid_registry.o
+  CC      lib/string.o
+  CC      lib/timerqueue.o
+  CC      lib/vsprintf.o
+  CC      lib/crc32.o
+  LD      lib/built-in.o
+  AR      lib/lib.a
   LINK    vmlinux
   LD      vmlinux.o
   MODPOST vmlinux.o
@@ -33,53 +36,53 @@ make[2]: 'include/generated/vdso-offsets.h' is up to date.
   SORTEX  vmlinux
   SYSMAP  System.map
   OBJCOPY arch/arm64/boot/Image
-  DTC     arch/arm64/boot/dts/qcom/msm8940-pmi8950-fih-D1C-EVT.dtb
   DTC     arch/arm64/boot/dts/qcom/msm8937-pmi8950-fih-D1C-EVT.dtb
+  DTC     arch/arm64/boot/dts/qcom/msm8940-pmi8950-fih-D1C-EVT.dtb
   Building modules, stage 2.
   MODPOST 12 modules
   DTC     arch/arm64/boot/dts/qcom/msmcobalt-mtp.dtb
   CC      block/test-iosched.mod.o
-  CC      crypto/ansi_cprng.mod.o
   DTC     arch/arm64/boot/dts/qcom/msm8952-qrd-skum.dtb
+  CC      crypto/ansi_cprng.mod.o
   DTC     arch/arm64/boot/dts/qcom/msm8952-mtp.dtb
-  CC      drivers/char/rdbg.mod.o
   DTC     arch/arm64/boot/dts/qcom/msm8937-pmi8937-mtp.dtb
+  CC      drivers/char/rdbg.mod.o
   DTC     arch/arm64/boot/dts/qcom/msm8937-pmi8950-fih-D1C-PVT.dtb
-  CC      drivers/input/evbug.mod.o
   DTC     arch/arm64/boot/dts/qcom/msm8937-pmi8950-fih-PLE-DVT.dtb
-  CC      drivers/mmc/card/mmc_block_test.mod.o
+  CC      drivers/input/evbug.mod.o
   DTC     arch/arm64/boot/dts/qcom/msmcobalt-cdp.dtb
+  CC      drivers/mmc/card/mmc_block_test.mod.o
   DTC     arch/arm64/boot/dts/qcom/msm8937-pmi8950-fih-D1-DVT.dtb
-  CC      drivers/mmc/card/mmc_test.mod.o
   DTC     arch/arm64/boot/dts/qcom/msm8937-pmi8950-fih-D1-EVB.dtb
+  CC      drivers/mmc/card/mmc_test.mod.o
   DTC     arch/arm64/boot/dts/qcom/msm8952-ext-codec-cdp.dtb
   CC      drivers/net/wireless/ath/wil6210/wil6210.mod.o
-  CC      drivers/scsi/ufs/ufs_test.mod.o
-  CC      drivers/video/backlight/backlight.mod.o
   DTC     arch/arm64/boot/dts/qcom/msmcobalt-rumi.dtb
-  CC      drivers/video/backlight/generic_bl.mod.o
+  CC      drivers/scsi/ufs/ufs_test.mod.o
   DTC     arch/arm64/boot/dts/qcom/msmcobalt-v2-sim.dtb
-  CC      drivers/video/backlight/lcd.mod.o
   DTC     arch/arm64/boot/dts/qcom/msm8937-pmi8950-mtp.dtb
-  CC      net/bridge/br_netfilter.mod.o
   DTC     arch/arm64/boot/dts/qcom/msm8937-pmi8950-fih-PLE-EVT.dtb
+  CC      drivers/video/backlight/backlight.mod.o
+  CC      drivers/video/backlight/generic_bl.mod.o
+  CC      drivers/video/backlight/lcd.mod.o
+  CC      net/bridge/br_netfilter.mod.o
+  DTC     arch/arm64/boot/dts/qcom/msmcobalt-sim.dtb
+  DTC     arch/arm64/boot/dts/qcom/msmcobalt-v2-mtp.dtb
   LD [M]  block/test-iosched.ko
+  DTC     arch/arm64/boot/dts/qcom/msm8940-pmi8950-mtp.dtb
   LD [M]  crypto/ansi_cprng.ko
   LD [M]  drivers/char/rdbg.ko
   LD [M]  drivers/input/evbug.ko
   LD [M]  drivers/mmc/card/mmc_block_test.ko
   LD [M]  drivers/mmc/card/mmc_test.ko
   LD [M]  drivers/net/wireless/ath/wil6210/wil6210.ko
+  DTC     arch/arm64/boot/dts/qcom/msmcobalt-v2-rumi.dtb
+  DTC     arch/arm64/boot/dts/qcom/msm8952-cdp.dtb
   LD [M]  drivers/scsi/ufs/ufs_test.ko
   LD [M]  drivers/video/backlight/backlight.ko
   LD [M]  drivers/video/backlight/generic_bl.ko
   LD [M]  drivers/video/backlight/lcd.ko
   LD [M]  net/bridge/br_netfilter.ko
-  DTC     arch/arm64/boot/dts/qcom/msmcobalt-sim.dtb
-  DTC     arch/arm64/boot/dts/qcom/msmcobalt-v2-mtp.dtb
-  DTC     arch/arm64/boot/dts/qcom/msm8940-pmi8950-mtp.dtb
-  DTC     arch/arm64/boot/dts/qcom/msmcobalt-v2-rumi.dtb
-  DTC     arch/arm64/boot/dts/qcom/msm8952-cdp.dtb
   DTC     arch/arm64/boot/dts/qcom/msm8940-pmi8950-fih-D1-EVB.dtb
   DTC     arch/arm64/boot/dts/qcom/msmcobalt-v2-cdp.dtb
   DTC     arch/arm64/boot/dts/qcom/msm8940-pmi8937-mtp.dtb
