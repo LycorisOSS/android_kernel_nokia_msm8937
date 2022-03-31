@@ -95,6 +95,7 @@ enum {
 	IRQ_NESTED_THREAD	= (1 << 15),
 	IRQ_NOTHREAD		= (1 << 16),
 	IRQ_PER_CPU_DEVID	= (1 << 17),
+	IRQ_DISABLE_UNLAZY	= (1 << 19),
 	IRQ_IS_POLLED		= (1 << 18),
 };
 
