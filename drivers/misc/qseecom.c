@@ -8407,10 +8407,9 @@ out:
  */
 static int qseecom_check_whitelist_feature(void)
 {
-	u64 version = 0;
-	int ret = scm_get_feat_version(FEATURE_ID_WHITELIST, &version);
+	int version = scm_get_feat_version(FEATURE_ID_WHITELIST);
 
-	return (ret == 0) && (version >= MAKE_WHITELIST_VERSION(1, 0, 0));
+	return version >= MAKE_WHITELIST_VERSION(1, 0, 0);
 }
 
 static int qseecom_probe(struct platform_device *pdev)
