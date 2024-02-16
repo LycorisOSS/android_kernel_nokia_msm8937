@@ -342,6 +342,15 @@ static int qpnp_wled_write_reg(struct qpnp_wled *wled, u8 *data, u16 addr)
 {
 	int rc;
 
+	//Display-FixPR-D1C-5160-00+{_20161207
+	//PMIC WLED module enable/disable reg. is set too close (about 37us) and cause PMIC WLED is in wrong state.
+	//Add 5ms delay time when PMIC WLED module is disable to avoid WLED module control bit set enable/disable state at the same time.
+	if((addr==0xd846) && (*data==0))
+	{
+		msleep(5);
+	}
+	//Display-FixPR-D1C-5160-00+}_20161207
+
 	rc = spmi_ext_register_writel(wled->spmi->ctrl, wled->spmi->sid,
 							addr, data, 1);
 	if (rc < 0)
@@ -1118,6 +1127,18 @@ static int qpnp_wled_sink_config(struct qpnp_wled *wled)
 
 		reg &= QPNP_WLED_CABC_MASK;
 		reg |= (wled->en_cabc << QPNP_WLED_CABC_SHIFT);
+		//SW4-HL-Display-EnablePmicAcceptPwmSignalAccordingToPanelCabcCommand*{_20161027
+		if(strstr(saved_command_line, " lcm-pwm-output-enabled")!=NULL)
+		{
+			reg |= (1 << QPNP_WLED_CABC_SHIFT);
+			pr_debug("\n\n*** [HL]%s: reg |= (1 << QPNP_WLED_CABC_SHIFT) ***\n\n", __func__);
+		}
+		else
+		{
+			reg |= (wled->en_cabc << QPNP_WLED_CABC_SHIFT);
+			pr_debug("\n\n*** [HL]%s: reg |= (%d << QPNP_WLED_CABC_SHIFT) ***\n\n", __func__, wled->en_cabc);
+		}
+		//SW4-HL-Display-EnablePmicAcceptPwmSignalAccordingToPanelCabcCommand*}_20161027
 		rc = qpnp_wled_write_reg(wled, &reg,
 					 QPNP_WLED_CABC_REG(wled->sink_base,
 							    wled->strings[i]));
@@ -1418,6 +1439,110 @@ static int qpnp_wled_config(struct qpnp_wled *wled)
 	rc = qpnp_wled_sink_config(wled);
 	if (rc < 0)
 		return rc;
+	/* disable all current sinks and enable selected strings */
+	reg = 0x00;
+	rc = qpnp_wled_write_reg(wled, &reg,
+			QPNP_WLED_CURR_SINK_REG(wled->sink_base));
+
+	for (i = 0; i < wled->num_strings; i++) {
+		if (wled->strings[i] >= QPNP_WLED_MAX_STRINGS) {
+			dev_err(&wled->spmi->dev, "Invalid string number\n");
+			return -EINVAL;
+		}
+
+		/* MODULATOR */
+		rc = qpnp_wled_read_reg(wled, &reg,
+				QPNP_WLED_MOD_EN_REG(wled->sink_base,
+						wled->strings[i]));
+		if (rc < 0)
+			return rc;
+		reg &= QPNP_WLED_MOD_EN_MASK;
+		reg |= (QPNP_WLED_MOD_EN << QPNP_WLED_MOD_EN_SHFT);
+
+		if (wled->dim_mode == QPNP_WLED_DIM_HYBRID)
+			reg &= QPNP_WLED_GATE_DRV_MASK;
+		else
+			reg |= ~QPNP_WLED_GATE_DRV_MASK;
+
+		rc = qpnp_wled_write_reg(wled, &reg,
+				QPNP_WLED_MOD_EN_REG(wled->sink_base,
+						wled->strings[i]));
+		if (rc)
+			return rc;
+
+		/* SYNC DELAY */
+		if (wled->sync_dly_us > QPNP_WLED_SYNC_DLY_MAX_US)
+			wled->sync_dly_us = QPNP_WLED_SYNC_DLY_MAX_US;
+
+		rc = qpnp_wled_read_reg(wled, &reg,
+				QPNP_WLED_SYNC_DLY_REG(wled->sink_base,
+						wled->strings[i]));
+		if (rc < 0)
+			return rc;
+		reg &= QPNP_WLED_SYNC_DLY_MASK;
+		temp = wled->sync_dly_us / QPNP_WLED_SYNC_DLY_STEP_US;
+		reg |= temp;
+		rc = qpnp_wled_write_reg(wled, &reg,
+				QPNP_WLED_SYNC_DLY_REG(wled->sink_base,
+						wled->strings[i]));
+		if (rc)
+			return rc;
+
+		/* FULL SCALE CURRENT */
+		if (wled->fs_curr_ua > QPNP_WLED_FS_CURR_MAX_UA)
+			wled->fs_curr_ua = QPNP_WLED_FS_CURR_MAX_UA;
+
+		rc = qpnp_wled_read_reg(wled, &reg,
+				QPNP_WLED_FS_CURR_REG(wled->sink_base,
+						wled->strings[i]));
+		if (rc < 0)
+			return rc;
+		reg &= QPNP_WLED_FS_CURR_MASK;
+		temp = wled->fs_curr_ua / QPNP_WLED_FS_CURR_STEP_UA;
+		reg |= temp;
+		rc = qpnp_wled_write_reg(wled, &reg,
+				QPNP_WLED_FS_CURR_REG(wled->sink_base,
+						wled->strings[i]));
+		if (rc)
+			return rc;
+
+		/* CABC */
+		rc = qpnp_wled_read_reg(wled, &reg,
+				QPNP_WLED_CABC_REG(wled->sink_base,
+						wled->strings[i]));
+		if (rc < 0)
+			return rc;
+		reg &= QPNP_WLED_CABC_MASK;
+		//Display-EnablePmicAcceptPwmSignalAccordingToPanelCabcCommand*{_20161027
+		if(strstr(saved_command_line, " lcm-pwm-output-enabled")!=NULL)
+		{
+			reg |= (1 << QPNP_WLED_CABC_SHIFT);
+			pr_debug("\n\n*** [HL]%s: reg |= (1 << QPNP_WLED_CABC_SHIFT) ***\n\n", __func__);
+		}
+		else
+		{
+			reg |= (wled->en_cabc << QPNP_WLED_CABC_SHIFT);
+			pr_debug("\n\n*** [HL]%s: reg |= (%d << QPNP_WLED_CABC_SHIFT) ***\n\n", __func__, wled->en_cabc);
+		}
+		//Display-EnablePmicAcceptPwmSignalAccordingToPanelCabcCommand*}_20161027
+		rc = qpnp_wled_write_reg(wled, &reg,
+				QPNP_WLED_CABC_REG(wled->sink_base,
+						wled->strings[i]));
+		if (rc)
+			return rc;
+
+		/* Enable CURRENT SINK */
+		rc = qpnp_wled_read_reg(wled, &reg,
+				QPNP_WLED_CURR_SINK_REG(wled->sink_base));
+		if (rc < 0)
+			return rc;
+		temp = wled->strings[i] + QPNP_WLED_CURR_SINK_SHIFT;
+		reg |= (1 << temp);
+		rc = qpnp_wled_write_reg(wled, &reg,
+				QPNP_WLED_CURR_SINK_REG(wled->sink_base));
+		if (rc)
+			return rc;
+	}
 
 	rc = qpnp_wled_sync_reg_toggle(wled);
 	if (rc < 0) {
